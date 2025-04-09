@@ -42,8 +42,9 @@ else:
     )
 
 # ロゴ表示（ファイル名を合わせて同じフォルダに置いてね）
-logo = Image.open("brassbuddy_logo.png")
-st.image(logo, use_column_width=True)
+# 変更後（Streamlit Cloud対応！）
+st.image("brassbuddy_logo.png", use_column_width=True)
+
 
 st.markdown(
     """
