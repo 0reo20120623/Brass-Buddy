@@ -9,12 +9,54 @@ from pydub.generators import Sine
 import tempfile
 import time
 from io import BytesIO
+from PIL import Image
 
-st.title("BrassBuddy α版 - AI練習アシスタント")
+# =========================
+# 🎨 カラーテーマ & ロゴ
+# =========================
+theme = st.radio("テーマを選択してください", ["ホワイト", "ブラック"], horizontal=True)
 
-# ------------------------
-# 課題選択と譜面表示
-# ------------------------
+if theme == "ブラック":
+    st.markdown(
+        """
+        <style>
+            body {
+                background-color: #111111;
+                color: white;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+else:
+    st.markdown(
+        """
+        <style>
+            body {
+                background-color: white;
+                color: black;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+# ロゴ表示（ファイル名を合わせて同じフォルダに置いてね）
+logo = Image.open("brassbuddy_logo.png")
+st.image(logo, use_column_width=True)
+
+st.markdown(
+    """
+    <h1 style='text-align: center; color: #4A90E2;'>🎺 BrassBuddy</h1>
+    <h3 style='text-align: center; color: gray;'>AIで上達をサポートする金管楽器練習アプリ</h3>
+    <hr style='border-top: 3px solid #F5A623;'>
+    """,
+    unsafe_allow_html=True
+)
+
+# =========================
+# 🎼 課題選択 & 譜面表示
+# =========================
 task = st.selectbox("今日の練習課題を選んでください", [
     "ロングトーンF",
     "スケール練習（C-Dur）",
@@ -44,18 +86,15 @@ if score_file:
     st.subheader("譜面表示")
     display_pdf(score_file)
 
-# ------------------------
-# 音声アップロード＆解析
-# ------------------------
-uploaded_file = st.file_uploader(
-    "演奏音声ファイルをアップロード（WAV/MP3/M4A）",
-    type=["wav", "mp3", "m4a"]
-)
+# =========================
+# 🎧 音声アップロード & ピッチ・リズム解析
+# =========================
+uploaded_file = st.file_uploader("演奏音声ファイルをアップロード（WAV/MP3/M4A）", type=["wav", "mp3", "m4a"])
 
 if uploaded_file is not None:
     st.audio(uploaded_file)
 
-    # m4a変換処理
+    # M4A変換
     if uploaded_file.name.endswith(".m4a"):
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmpfile:
             audio = AudioSegment.from_file(uploaded_file, format="m4a")
@@ -66,7 +105,7 @@ if uploaded_file is not None:
 
     y, sr = librosa.load(file_to_load, sr=None)
 
-    # ピッチ解析（A3=220Hz を中心とした2オクターブ）
+    # 🎯 ピッチ解析（A3=220Hz 中心の2オクターブ）
     f0, _, _ = librosa.pyin(y, fmin=librosa.note_to_hz('A2'), fmax=librosa.note_to_hz('A4'))
     valid_f0 = f0[~np.isnan(f0)]
 
@@ -79,6 +118,7 @@ if uploaded_file is not None:
         st.write(f"ピッチ安定スコア：{pitch_score:.1f} / 100")
         st.write(f"ピッチの標準偏差: {std_pitch:.4f} Hz")
 
+        # 🎵 ピッチ評価コメント（基準 442Hz）
         target_pitch = 442
         tolerance = 10
         if avg_pitch < target_pitch - tolerance:
@@ -88,6 +128,7 @@ if uploaded_file is not None:
         else:
             st.success("🎯 ピッチは良好です！この調子で続けましょう✨")
 
+        # 🥁 リズム解析（onset検出）
         onset_frames = librosa.onset.onset_detect(y=y, sr=sr)
         onset_times = librosa.frames_to_time(onset_frames, sr=sr)
 
@@ -103,9 +144,9 @@ if uploaded_file is not None:
     else:
         st.warning("音程が検出できませんでした。録音を確認してください。")
 
-# ------------------------
-# 🎵 メトロノーム機能
-# ------------------------
+# =========================
+# 🕒 メトロノーム
+# =========================
 st.subheader("🕒 練習用メトロノーム")
 
 bpm = st.slider("テンポ (BPM)", min_value=40, max_value=240, value=120, step=1)
