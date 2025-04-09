@@ -14,7 +14,8 @@ from PIL import Image
 # =========================
 # 🎨 カラーテーマ & ロゴ
 # =========================
-theme = st.radio("テーマを選択してください", ["ホワイト", "ブラック"], horizontal=True)
+theme = st.radio("", ["ホワイト", "ブラック"], horizontal=True, label_visibility="collapsed")
+
 
 if theme == "ブラック":
     st.markdown(
