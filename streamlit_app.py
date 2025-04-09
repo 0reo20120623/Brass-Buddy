@@ -42,8 +42,23 @@ else:
     )
 
 # ロゴ表示（ファイル名を合わせて同じフォルダに置いてね）
-# 変更後（Streamlit Cloud対応！）
-st.image("brassbuddy_logo.png", use_column_width=True)
+import base64  # すでにあれば追加不要
+
+def show_logo():
+    logo_path = "brassbuddy_logo.png"
+    try:
+        with open(logo_path, "rb") as img_file:
+            encoded = base64.b64encode(img_file.read()).decode()
+            st.markdown(
+                f"<p style='text-align: center;'><img src='data:image/png;base64,{encoded}' width='300'/></p>",
+                unsafe_allow_html=True
+            )
+    except FileNotFoundError:
+        st.warning("ロゴ画像が見つかりません。`brassbuddy_logo.png` をルートに置いてください。")
+
+# 🔁 ロゴを表示
+show_logo()
+
 
 
 st.markdown(
